@@ -48,21 +48,20 @@ def process(data,image_name,mask_name):
     return "上传成功！"
 
 def output_PILimage(image_name,mask_name):
-    timestamp = int(time.time())
+
     base_image_url = f"https://mengall.github.io/UP_img/image/{image_name}"
     mask_image_url = f"https://mengall.github.io/UP_img/mask/{mask_name}"
-    print(base_image_url)
-    print(mask_image_url)
+    # print(base_image_url)
+    # print(mask_image_url)
 
-    img_result = wait_for_image(base_image_url, timestamp)
-    mask_result = wait_for_image(mask_image_url, timestamp)
+    img_result = wait_for_image(base_image_url)
+    mask_result = wait_for_image(mask_image_url)
 
     if img_result and mask_result:
         img_link = edit_image_with_mask(img_result, mask_result)
     else:
         img_link = None
         print("图片未上传")
-
     return img_link
 
 def hand_link(data):
@@ -80,7 +79,7 @@ def hand_link(data):
 def genrate_filename(name):
     return time.strftime(f"{name}_%Y%m%d_%H%M%S.png")
 
-def wait_for_image(url,timestamp, timeout=15, interval=3):
+def wait_for_image(url, timeout=60, interval=5):
     """
     轮询检测图像是否可以访问。
     - timeout: 最长等待时间（秒）
@@ -89,16 +88,18 @@ def wait_for_image(url,timestamp, timeout=15, interval=3):
     start_time = time.time()
     while time.time() - start_time < timeout:
         try:
-            url = f"{url}?v={timestamp}"
-            res = requests.get(url)
-            print(res)
+            result_url = f"{url}?v={int(time.time())}"
+            # print(result_url)
+            res = requests.get(result_url)
+
             if res.status_code == 200:
-                return url
+                return result_url
+            else:
+                print("图像加载中...")
         except Exception as e:
             print(f"等待图像可访问时出错: {e}")
         time.sleep(interval)
     return None
-
 
 with gr.Blocks() as demo:
     with gr.Tabs():
@@ -112,11 +113,12 @@ with gr.Blocks() as demo:
             generate_button.click(fn=text_to_image, inputs=[prompt_input, seed_input], outputs=image_show)
 
         with gr.Tab("图像重绘"):
-            image_mask = gr.ImageEditor(label="图像重绘区域",
-                                       show_share_button=True,
-                                       layers=False,
-                                       height=512)
-            output_image = gr.Image(label="重绘后的图像")
+            with gr.Row():
+                image_mask = gr.ImageEditor(label="图像重绘区域",
+                                           show_share_button=True,
+                                           layers=False,
+                                           height=512)
+                output_image = gr.Image(label="重绘后的图像",)
 
             # 为按钮设置不同的名字，避免冲突
             upload_button = gr.Button("开始重绘")
