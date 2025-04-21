@@ -3,7 +3,7 @@ import numpy as np
 from PIL import Image
 from git_IMG import upload_PILimage_to_github
 from draw_api import edit_image_with_mask
-from khoya_test import generate_lora_img
+from generate_image.khoya_test import generate_lora_img
 import time
 import torch
 import requests
@@ -51,15 +51,17 @@ def output_PILimage(image_name,mask_name):
     timestamp = int(time.time())
     base_image_url = f"https://mengall.github.io/UP_img/image/{image_name}"
     mask_image_url = f"https://mengall.github.io/UP_img/mask/{mask_name}"
+    print(base_image_url)
+    print(mask_image_url)
 
-    img_result = wait_for_image(base_image_url,timestamp)
+    img_result = wait_for_image(base_image_url, timestamp)
     mask_result = wait_for_image(mask_image_url, timestamp)
 
     if img_result and mask_result:
-        img_link = edit_image_with_mask(img_result,mask_result)
+        img_link = edit_image_with_mask(img_result, mask_result)
     else:
         img_link = None
-        print("缓存未清除")
+        print("图片未上传")
 
     return img_link
 
